@@ -265,7 +265,6 @@ microphone:
     i2s_din_pin: 14
     pdm: false
     sample_rate: 16000
-    max_channels: 1
 
 speaker:
   - platform: m5cores3_audio
@@ -275,7 +274,6 @@ speaker:
     i2s_dout_pin: 13
     mode: mono
     sample_rate: 16000
-    max_channels: 1
 
 # 
 # VA
