@@ -265,7 +265,10 @@ microphone:
     adc_type: external
     i2s_din_pin: 14
     pdm: false
-
+    sample_rate: 16000
+    channels: 1
+    bits_per_sample: 16
+    
 speaker:
   - platform: m5cores3_audio
     m5cores3_audio_id: m5cores3_audio_1
