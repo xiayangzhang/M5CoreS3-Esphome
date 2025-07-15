@@ -53,6 +53,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.GenerateID(): cv.declare_id(I2SAudioSpeaker),
                     cv.GenerateID(CONF_I2S_AUDIO_ID): cv.use_id(I2SAudioComponent),
                     cv.Required(CONF_MODE): cv.enum(INTERNAL_DAC_OPTIONS, lower=True),
+                    cv.Optional("sample_rate", default=16000): cv.int_range(min=8000, max=48000),
+                    cv.Optional("max_channels", default=2): cv.int_range(min=1, max=2),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
             "external": speaker.SPEAKER_SCHEMA.extend(
@@ -65,6 +67,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_MODE, default="mono"): cv.one_of(
                         *EXTERNAL_DAC_OPTIONS, lower=True
                     ),
+                    cv.Optional("sample_rate", default=16000): cv.int_range(min=8000, max=48000),
+                    cv.Optional("max_channels", default=2): cv.int_range(min=1, max=2),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
         },
