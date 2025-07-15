@@ -18,6 +18,8 @@ class I2SAudioOut : public Parented<M5CoreS3AudioComponent> {};
 class M5CoreS3AudioComponent : public Component {
  public:
   void setup() override;
+  void loop() override;
+  void dump_config() override;
 
   i2s_pin_config_t get_pin_config() const {
     return {
@@ -51,7 +53,7 @@ class M5CoreS3AudioComponent : public Component {
   i2s_port_t port_{};
 };
 
-}  // namespace i2s_audio
+}  // namespace m5cores3_audio
 }  // namespace esphome
 
 // #endif  // USE_ESP32

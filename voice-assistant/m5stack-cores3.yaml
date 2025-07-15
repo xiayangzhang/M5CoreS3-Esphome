@@ -31,6 +31,8 @@ esphome:
     version: "1.0"
   platformio_options:
     board_build.f_cpu : 240000000L
+    board_build.psram_type: qio_opi
+    board_build.memory_type: qio_opi
   libraries:
     - m5stack/M5GFX@^0.1.11
     - m5stack/M5Unified@^0.1.11
@@ -51,6 +53,8 @@ esp32:
   flash_size: 16MB
   framework:
     type: arduino
+    version: 2.0.14
+    platform_version: 6.4.0
 
 psram:
   mode: octal
@@ -65,6 +69,8 @@ external_components:
 
 # Enable logging
 logger:
+  level: INFO
+  baud_rate: 115200
 
 # Enable Home Assistant API
 api:
@@ -104,6 +110,10 @@ globals:
     type: int
     restore_value: no
     initial_value: ${voice_assist_not_ready_phase_id}
+  - id: audio_error_count
+    type: int
+    restore_value: no
+    initial_value: '0'
 
 # 
 # Display
@@ -162,6 +172,24 @@ script:
           else:
             - display.page.show: initializing_page
             - component.update: m5cores3_lcd
+  - id: handle_audio_error
+    then:
+      - lambda: |
+          id(audio_error_count)++;
+          ESP_LOGW("main", "Audio error count: %d", id(audio_error_count));
+          if (id(audio_error_count) >= 5) {
+            ESP_LOGE("main", "Too many audio errors, restarting...");
+            App.safe_reboot();
+          }
+      - delay: 2s
+      - if:
+          condition:
+            switch.is_off: mute
+          then:
+            - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+          else:
+            - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+      - script.execute: draw_display
 
 image:
   - file: ${error_illustration_file}
@@ -286,10 +314,12 @@ voice_assistant:
   use_wake_word: true
   noise_suppression_level: 2
   auto_gain: 31dBFS
-  volume_multiplier: 2.0
-  # vad_threshold: 3
+  volume_multiplier: 1.5
+  vad_threshold: 3
   on_listening:
-    - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+    - lambda: |
+        id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+        id(audio_error_count) = 0;  // Reset error count on successful operation
     - script.execute: draw_display
   on_stt_vad_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
@@ -307,16 +337,9 @@ voice_assistant:
         then:
           - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};  
           - script.execute: draw_display
-          - delay: 1s
-          - if:
-              condition:
-                switch.is_off: mute
-              then:
-                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
-              else:
-                - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
-          - script.execute: draw_display
+          - script.execute: handle_audio_error
   on_client_connected: 
+    - delay: 2s  # Give time for components to stabilize
     - if:
         condition:
           switch.is_off: mute
@@ -355,6 +378,7 @@ switch:
         then:      
           - lambda: id(va).set_use_wake_word(true);
           - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+          - delay: 500ms  # Small delay to ensure proper state transition
           - if:
               condition:
                 not:
@@ -371,3 +395,15 @@ switch:
           - lambda: id(va).set_use_wake_word(false);
           - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
           - script.execute: draw_display
+
+# Watchdog to monitor system health
+interval:
+  - interval: 60s
+    then:
+      - if:
+          condition:
+            lambda: return id(audio_error_count) > 0;
+          then:
+            - lambda: |
+                id(audio_error_count)--;
+                ESP_LOGD("main", "Audio error count decreased to: %d", id(audio_error_count));
