@@ -213,7 +213,6 @@ color:
 display:
   - platform: m5cores3_display
     model: ILI9342
-    dc_pin: 35
     update_interval: never
     id: m5cores3_lcd
     pages:
@@ -265,6 +264,8 @@ microphone:
     adc_type: external
     i2s_din_pin: 14
     pdm: false
+    sample_rate: 16000
+    max_channels: 1
 
 speaker:
   - platform: m5cores3_audio
@@ -273,6 +274,8 @@ speaker:
     dac_type: external
     i2s_dout_pin: 13
     mode: mono
+    sample_rate: 16000
+    max_channels: 1
 
 # 
 # VA

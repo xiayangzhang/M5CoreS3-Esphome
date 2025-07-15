@@ -127,7 +127,7 @@ CONFIG_SCHEMA = cv.All(
                     }
                 ),
             ),
-            cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_DC_PIN): pins.gpio_output_pin_schema,
             # cv.Optional(CONF_DC_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_LED_PIN): cv.invalid(

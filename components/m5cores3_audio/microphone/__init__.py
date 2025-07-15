@@ -2,7 +2,7 @@ import esphome.config_validation as cv
 import esphome.codegen as cg
 
 from esphome import pins
-from esphome.const import CONF_CHANNEL, CONF_ID, CONF_NUMBER
+from esphome.const import CONF_CHANNEL, CONF_ID, CONF_NUMBER, CONF_SAMPLE_RATE
 from esphome.components import microphone, esp32
 from esphome.components.adc import ESP32_VARIANT_ADC1_PIN_TO_CHANNEL, validate_adc_pin
 
@@ -22,6 +22,7 @@ CONF_ADC_PIN = "adc_pin"
 CONF_ADC_TYPE = "adc_type"
 CONF_PDM = "pdm"
 CONF_BITS_PER_SAMPLE = "bits_per_sample"
+CONF_MAX_CHANNELS = "max_channels"
 
 I2SAudioMicrophone = i2s_audio_ns.class_(
     "I2SAudioMicrophone", I2SAudioIn, microphone.Microphone, cg.Component
@@ -66,6 +67,8 @@ BASE_SCHEMA = microphone.MICROPHONE_SCHEMA.extend(
         cv.Optional(CONF_BITS_PER_SAMPLE, default="32bit"): cv.All(
             _validate_bits, cv.enum(BITS_PER_SAMPLE)
         ),
+        cv.Optional(CONF_SAMPLE_RATE, default=16000): cv.int_range(min=8000, max=48000),
+        cv.Optional(CONF_MAX_CHANNELS, default=1): cv.int_range(min=1, max=2),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 

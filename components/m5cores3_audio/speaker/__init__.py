@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
-from esphome.const import CONF_ID, CONF_MODE
+from esphome.const import CONF_ID, CONF_MODE, CONF_SAMPLE_RATE
 from esphome.components import esp32, speaker
 
 from .. import (
@@ -24,6 +24,7 @@ i2s_dac_mode_t = cg.global_ns.enum("i2s_dac_mode_t")
 
 CONF_MUTE_PIN = "mute_pin"
 CONF_DAC_TYPE = "dac_type"
+CONF_MAX_CHANNELS = "max_channels"
 
 INTERNAL_DAC_OPTIONS = {
     "left": i2s_dac_mode_t.I2S_DAC_CHANNEL_LEFT_EN,
@@ -53,6 +54,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.GenerateID(): cv.declare_id(I2SAudioSpeaker),
                     cv.GenerateID(CONF_I2S_AUDIO_ID): cv.use_id(I2SAudioComponent),
                     cv.Required(CONF_MODE): cv.enum(INTERNAL_DAC_OPTIONS, lower=True),
+                    cv.Optional(CONF_SAMPLE_RATE, default=16000): cv.int_range(min=8000, max=48000),
+                    cv.Optional(CONF_MAX_CHANNELS, default=2): cv.int_range(min=1, max=2),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
             "external": speaker.SPEAKER_SCHEMA.extend(
@@ -65,6 +68,8 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_MODE, default="mono"): cv.one_of(
                         *EXTERNAL_DAC_OPTIONS, lower=True
                     ),
+                    cv.Optional(CONF_SAMPLE_RATE, default=16000): cv.int_range(min=8000, max=48000),
+                    cv.Optional(CONF_MAX_CHANNELS, default=1): cv.int_range(min=1, max=2),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
         },
@@ -83,6 +88,7 @@ async def to_code(config):
 
     if config[CONF_DAC_TYPE] == "internal":
         cg.add(var.set_internal_dac_mode(config[CONF_MODE]))
+        cg.add(var.set_external_dac_channels(2 if config[CONF_MODE] == "stereo" else 1))
     else:
         cg.add(var.set_dout_pin(config[CONF_I2S_DOUT_PIN]))
         cg.add(var.set_external_dac_channels(2 if config[CONF_MODE] == "stereo" else 1))
