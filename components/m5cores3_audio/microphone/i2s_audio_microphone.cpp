@@ -136,7 +136,7 @@ void I2SAudioMicrophone::stop_() {
   this->high_freq_.stop();
 }
 
-size_t  I2SAudioMicrophone:: read_（uint8_t *buf，size_t len ，TickType_t ticks_to_wait）{
+size_t I2SAudioMicrophone::read_(uint8_t *buf, size_t len, TickType_t ticks_to_wait) {
   // size_t bytes_read = 0;
   // esp_err_t err = i2s_read(this->parent_->get_port(), buf, len, &bytes_read, (100 / portTICK_PERIOD_MS));
   // if (err != ESP_OK) {
