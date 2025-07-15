@@ -14,6 +14,11 @@ from .. import (
     CONF_I2S_DIN_PIN,
 )
 
+# Audio format constants
+CONF_SAMPLE_RATE = "sample_rate"
+CONF_CHANNELS = "channels" 
+CONF_BITS_PER_SAMPLE_VAL = "bits_per_sample"
+
 CODEOWNERS = ["@jesserockz"]
 # DEPENDENCIES = ["i2s_audio"]
 DEPENDENCIES = ["m5cores3_audio"]
@@ -66,8 +71,19 @@ BASE_SCHEMA = microphone.MICROPHONE_SCHEMA.extend(
         cv.Optional(CONF_BITS_PER_SAMPLE, default="32bit"): cv.All(
             _validate_bits, cv.enum(BITS_PER_SAMPLE)
         ),
+        # Audio format configuration for compatibility with ESPHome 2025.8.0+
+        cv.Optional(CONF_SAMPLE_RATE, default=16000): cv.positive_int,
+        cv.Optional(CONF_CHANNELS, default=1): cv.one_of(1, 2),
+        cv.Optional(CONF_BITS_PER_SAMPLE_VAL, default=16): cv.one_of(16, 32),
     }
 ).extend(cv.COMPONENT_SCHEMA)
+
+def _validate_audio_format(config):
+    """Add required audio format fields for ESPHome 2025.8.0+ compatibility"""
+    # Add max_channels field that is required by newer ESPHome versions
+    if "max_channels" not in config:
+        config["max_channels"] = config.get(CONF_CHANNELS, 1)
+    return config
 
 CONFIG_SCHEMA = cv.All(
     cv.typed_schema(
@@ -87,6 +103,7 @@ CONFIG_SCHEMA = cv.All(
         key=CONF_ADC_TYPE,
     ),
     validate_esp32_variant,
+    _validate_audio_format,
 )
 
 
@@ -95,6 +112,11 @@ async def to_code(config):
     await cg.register_component(var, config)
 
     await cg.register_parented(var, config[CONF_I2S_AUDIO_ID])
+    
+    # Set audio format parameters for ESPHome 2025.8.0+ compatibility  
+    cg.add(var.set_sample_rate(config[CONF_SAMPLE_RATE]))
+    cg.add(var.set_channels(config[CONF_CHANNELS]))
+    cg.add(var.set_bits_per_sample_val(config[CONF_BITS_PER_SAMPLE_VAL]))
 
     # if config[CONF_ADC_TYPE] == "internal":
     #     variant = esp32.get_esp32_variant()

@@ -32,6 +32,11 @@ class I2SAudioMicrophone : public I2SAudioIn, public microphone::Microphone, pub
 
   void set_channel(i2s_channel_fmt_t channel) { this->channel_ = channel; }
   void set_bits_per_sample(i2s_bits_per_sample_t bits_per_sample) { this->bits_per_sample_ = bits_per_sample; }
+  
+  // Audio format support methods for ESPHome 2025.8.0+ compatibility
+  void set_sample_rate(uint32_t sample_rate) { this->sample_rate_ = sample_rate; }
+  void set_channels(uint8_t channels) { this->channels_ = channels; }
+  void set_bits_per_sample_val(uint8_t bits) { this->bits_per_sample_val_ = bits; }
 
  protected:
   void start_();
@@ -46,6 +51,11 @@ class I2SAudioMicrophone : public I2SAudioIn, public microphone::Microphone, pub
   bool pdm_{false};
   i2s_channel_fmt_t channel_;
   i2s_bits_per_sample_t bits_per_sample_;
+  
+  // Audio format properties for ESPHome 2025.8.0+ compatibility
+  uint32_t sample_rate_{16000};
+  uint8_t channels_{1};
+  uint8_t bits_per_sample_val_{16};
 
   HighFrequencyLoopRequester high_freq_;
 };
