@@ -16,8 +16,7 @@ from .. import (
 
 # Audio format constants
 CONF_SAMPLE_RATE = "sample_rate"
-CONF_CHANNELS = "channels" 
-CONF_BITS_PER_SAMPLE_VAL = "bits_per_sample"
+CONF_CHANNELS = "channels"
 
 CODEOWNERS = ["@jesserockz"]
 # DEPENDENCIES = ["i2s_audio"]
@@ -74,7 +73,6 @@ BASE_SCHEMA = microphone.MICROPHONE_SCHEMA.extend(
         # Audio format configuration for compatibility with ESPHome 2025.8.0+
         cv.Optional(CONF_SAMPLE_RATE, default=16000): cv.positive_int,
         cv.Optional(CONF_CHANNELS, default=1): cv.one_of(1, 2),
-        cv.Optional(CONF_BITS_PER_SAMPLE_VAL, default=16): cv.one_of(16, 32),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -116,7 +114,10 @@ async def to_code(config):
     # Set audio format parameters for ESPHome 2025.8.0+ compatibility  
     cg.add(var.set_sample_rate(config[CONF_SAMPLE_RATE]))
     cg.add(var.set_channels(config[CONF_CHANNELS]))
-    cg.add(var.set_bits_per_sample_val(config[CONF_BITS_PER_SAMPLE_VAL]))
+    
+    # Convert bits_per_sample from enum to integer value
+    bits_per_sample_val = 32 if config[CONF_BITS_PER_SAMPLE] == i2s_bits_per_sample_t.I2S_BITS_PER_SAMPLE_32BIT else 16
+    cg.add(var.set_bits_per_sample_val(bits_per_sample_val))
 
     # if config[CONF_ADC_TYPE] == "internal":
     #     variant = esp32.get_esp32_variant()

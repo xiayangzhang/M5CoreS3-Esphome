@@ -1,4 +1,3 @@
-
 esphome:
   name: m5cores3-with-touch-and-sound
   friendly_name: M5CoreS3 With Touch And Sound
@@ -291,7 +290,6 @@ microphone:
     pdm: false
     sample_rate: 16000
     channels: 1
-    bits_per_sample: 16
 
 speaker:
   - platform: m5cores3_audio
