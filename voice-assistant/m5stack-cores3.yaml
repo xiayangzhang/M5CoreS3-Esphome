@@ -59,7 +59,7 @@ psram:
 external_components:
   - source:
       type: git
-      url: https://github.com/m5stack/M5CoreS3-Esphome
+      url: https://github.com/xiayangzhang/M5CoreS3-Esphome
     components: [ board_m5cores3, m5cores3_audio, m5cores3_display ]
     refresh: 0s
 
